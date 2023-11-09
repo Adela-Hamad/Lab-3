@@ -1,3 +1,5 @@
+//recursive Algorithm
+
 #include <stdio.h>
 
 void merge(int arr[], int left, int mid, int right) {
@@ -68,3 +70,5 @@ int main() {
 
     return 0;
 }
+
+

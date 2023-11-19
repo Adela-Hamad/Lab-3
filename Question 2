@@ -1,0 +1,88 @@
+// Read the input image file
+FILE *fp = fopen("Rain_Tree.pgm", "r");
+if (fp == NULL) {
+  printf("Error: Could not open input image file.\n");
+  exit(1);
+}
+
+
+// Get the image dimensions
+int width, height;
+fscanf(fp, "%d %d\n", &width, &height);
+
+// Dynamically allocate memory for the input and output image pixel values
+unsigned char *inputImage = (unsigned char *)malloc(width * height * sizeof(unsigned char));
+if (inputImage == NULL) {
+  printf("Error: Could not allocate memory for the input image.\n");
+  exit(1);
+}
+
+unsigned char *outputImage = (unsigned char *)malloc(width * height * sizeof(unsigned char));
+if (outputImage == NULL) {
+  printf("Error: Could not allocate memory for the output image.\n");
+  exit(1);
+}
+
+// Read the input image pixel values
+for (int i = 0; i < width * height; i++) {
+  fscanf(fp, "%d", &inputImage[i]);
+}
+
+fclose(fp);
+
+
+// Compute the histogram of the input image
+int histogram[256];
+for (int i = 0; i < 256; i++) {
+  histogram[i] = 0;
+}
+
+for (int i = 0; i < width * height; i++) {
+  histogram[inputImage[i]]++;
+}
+
+
+// Calculate the cumulative histogram of the image
+int cumulativeHistogram[256];
+cumulativeHistogram[0] = histogram[0];
+for (int i = 1; i < 256; i++) {
+  cumulativeHistogram[i] = cumulativeHistogram[i - 1] + histogram[i];
+}
+
+
+// Perform histogram equalization
+for (int i = 0; i < width * height; i++) {
+  outputImage[i] = (unsigned char)((cumulativeHistogram[inputImage[i]] * 255) / (width * height));
+}
+
+
+// Write the output image to a text PGM file
+FILE *fp = fopen("output.pgm", "w");
+if (fp == NULL) {
+  printf("Error: Could not open output text PGM file.\n");
+  exit(1);
+}
+
+fprintf(fp, "P2\n");
+fprintf(fp, "%d %d\n", width, height);
+fprintf(fp, "255\n");
+
+for (int i = 0; i < width * height; i++) {
+  fprintf(fp, "%d ", outputImage[i]);
+}
+
+fclose(fp);
+
+// Write the output image to a binary PGM file
+fp = fopen("output_binary.pgm", "wb");
+if (fp == NULL) {
+  printf("Error: Could not open output binary PGM file.\n");
+  exit(1);
+}
+
+fwrite(&width, sizeof(int), 1, fp);
+fwrite(&height, sizeof(int), 1, fp);
+fwrite(outputImage, sizeof(unsigned char), width * height, fp);
+
+fclose(fp);
+
